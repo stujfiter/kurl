@@ -1,0 +1,7 @@
+{
+    "url": "http://httpbin.org/post",
+    "method": "POST",
+    "body": {
+        "key": "value"
+    }
+}

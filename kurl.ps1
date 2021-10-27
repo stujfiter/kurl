@@ -4,8 +4,11 @@ param (
     [Parameter(Mandatory = $true)][string]$f,  # Request template file in json format
     [Parameter(Mandatory = $false)][string]$e, # File of Environment Variables in json format
     [Parameter(Mandatory = $false)][array]$v,  # Define additional variables "KEY_1:value1,KEY2:value2"
-    [Parameter(Mandatory = $false)][switch]$c  # Colorizes Output (Requires jq)
+    [Parameter(Mandatory = $false)][switch]$c,  # Colorizes Output (Requires jq)
+    [Parameter(Mandatory = $false)][string]$jwt # Set a Bearer token to use for Auth
 )
+
+$ErrorActionPreference = "Stop"
 
 # Make sure the request template file exists
 if ( -not( Test-Path -Path $f -PathType Leaf ) ) {
@@ -49,13 +52,24 @@ if ( $tokens."body") {
     }
 }
 
-$response = Invoke-WebRequest -Uri $tokens."url" `
+if ( $PSBoundParameters.ContainsKey('jwt') ) {
+    $response = Invoke-WebRequest -Uri $tokens."url" `
     -Method $tokens."method" `
     -Body ($tokens."body" | ConvertTo-Json -Depth 10) `
     -ContentType "application/json" `
+    -SkipHttpErrorCheck `
     -Authentication Bearer `
     -Token (ConvertTo-SecureString $global:token -asplaintext -force) `
     -AllowUnencryptedAuthentication
+}
+else {
+    $response = Invoke-WebRequest -Uri $tokens."url" `
+    -Method $tokens."method" `
+    -Body ($tokens."body" | ConvertTo-Json -Depth 10) `
+    -ContentType "application/json" `
+    -SkipHttpErrorCheck
+}
+
 
 Write-Host
 Write-Host StatusCode $response."StatusCode"
