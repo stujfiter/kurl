@@ -45,10 +45,10 @@ Write-Host $tokens."method" $tokens."url"
 
 if ( $tokens."body") {
     if ( $PSBoundParameters.ContainsKey('c') ) {
-        ConvertTo-Json -Depth 10 $tokens."body" | jq -C .
+        ConvertTo-Json -Depth 10 $tokens."body" | jq -C . | Write-Host
     }
     else {
-        ConvertTo-Json -Depth 10 $tokens."body"
+        ConvertTo-Json -Depth 10 $tokens."body" | Write-Host
     }
 }
 
@@ -59,7 +59,7 @@ if ( $PSBoundParameters.ContainsKey('jwt') ) {
     -ContentType "application/json" `
     -SkipHttpErrorCheck `
     -Authentication Bearer `
-    -Token (ConvertTo-SecureString $global:token -asplaintext -force) `
+    -Token (ConvertTo-SecureString $jwt -asplaintext -force) `
     -AllowUnencryptedAuthentication
 }
 else {
@@ -75,8 +75,10 @@ Write-Host
 Write-Host StatusCode $response."StatusCode"
 
 if ( $PSBoundParameters.ContainsKey('c') ) {
-    Write-Output $response."Content" | jq -C .
+    Write-Output $response."Content" | jq -C . | Write-Host
+} else {
+    Write-Host $response."Content"
 }
-else {
-    Write-Output $response."Content" | ConvertFrom-Json | ConvertTo-Json -Depth 10
-}
+# Write-Host $hostOutput
+
+Write-Output $response."Content" | ConvertFrom-Json | ConvertTo-Json -Depth 10 | Write-Output
