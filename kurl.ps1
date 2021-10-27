@@ -1,11 +1,12 @@
 #Requires -Version 7.0
 
 param (
-    [Parameter(Mandatory = $true)][string]$f,  # Request template file in json format
+    [Parameter(Mandatory = $true)][string]$f, # Request template file in json format
     [Parameter(Mandatory = $false)][string]$e, # File of Environment Variables in json format
-    [Parameter(Mandatory = $false)][array]$v,  # Define additional variables "KEY_1:value1,KEY2:value2"
-    [Parameter(Mandatory = $false)][switch]$c,  # Colorizes Output (Requires jq)
-    [Parameter(Mandatory = $false)][string]$jwt # Set a Bearer token to use for Auth
+    [Parameter(Mandatory = $false)][array]$v, # Define additional variables "KEY_1:value1,KEY2:value2"
+    [Parameter(Mandatory = $false)][switch]$c, # Colorizes Output (Requires jq)
+    [Parameter(Mandatory = $false)][string]$jwt, # Set a Bearer token to use for Auth
+    [Parameter(Mandatory = $false)][switch]$s    # Supress Terminal Output
 )
 
 $ErrorActionPreference = "Stop"
@@ -30,9 +31,6 @@ foreach ( $value in $v ) {
     $environment += @{ $kv[0] = $kv[1] } 
 }
 
-# Print out the current value of the environment variables
-$environment | Out-String | Write-Host
-
 # Inject environment variables into the request
 foreach ( $var in $environment.GetEnumerator()) {
     $pattern = "`${{{0}}}" -f $var.key
@@ -41,44 +39,49 @@ foreach ( $var in $environment.GetEnumerator()) {
 
 $tokens = ConvertFrom-Json $request -AsHashtable
 
-Write-Host $tokens."method" $tokens."url"
+# Print out the current value of the environment variables and the URL
+if ( -not $PSBoundParameters.ContainsKey('s') ) {
+    $environment | Out-String | Write-Host
+    Write-Host $tokens."method" $tokens."url"
 
-if ( $tokens."body") {
-    if ( $PSBoundParameters.ContainsKey('c') ) {
-        ConvertTo-Json -Depth 10 $tokens."body" | jq -C . | Write-Host
-    }
-    else {
-        ConvertTo-Json -Depth 10 $tokens."body" | Write-Host
+    if ( $tokens."body") {
+        if ( $PSBoundParameters.ContainsKey('c') ) {
+            ConvertTo-Json -Depth 10 $tokens."body" | jq -C . | Write-Host
+        }
+        else {
+            ConvertTo-Json -Depth 10 $tokens."body" | Write-Host
+        }
     }
 }
 
 if ( $PSBoundParameters.ContainsKey('jwt') ) {
     $response = Invoke-WebRequest -Uri $tokens."url" `
-    -Method $tokens."method" `
-    -Body ($tokens."body" | ConvertTo-Json -Depth 10) `
-    -ContentType "application/json" `
-    -SkipHttpErrorCheck `
-    -Authentication Bearer `
-    -Token (ConvertTo-SecureString $jwt -asplaintext -force) `
-    -AllowUnencryptedAuthentication
+        -Method $tokens."method" `
+        -Body ($tokens."body" | ConvertTo-Json -Depth 10) `
+        -ContentType "application/json" `
+        -SkipHttpErrorCheck `
+        -Authentication Bearer `
+        -Token (ConvertTo-SecureString $jwt -asplaintext -force) `
+        -AllowUnencryptedAuthentication
 }
 else {
     $response = Invoke-WebRequest -Uri $tokens."url" `
-    -Method $tokens."method" `
-    -Body ($tokens."body" | ConvertTo-Json -Depth 10) `
-    -ContentType "application/json" `
-    -SkipHttpErrorCheck
+        -Method $tokens."method" `
+        -Body ($tokens."body" | ConvertTo-Json -Depth 10) `
+        -ContentType "application/json" `
+        -SkipHttpErrorCheck
 }
 
+if ( -not $PSBoundParameters.ContainsKey('s') ) {
+    Write-Host
+    Write-Host StatusCode $response."StatusCode"
 
-Write-Host
-Write-Host StatusCode $response."StatusCode"
-
-if ( $PSBoundParameters.ContainsKey('c') ) {
-    Write-Output $response."Content" | jq -C . | Write-Host
-} else {
-    Write-Host $response."Content"
+    if ( $PSBoundParameters.ContainsKey('c') ) {
+        Write-Output $response."Content" | jq -C . | Write-Host
+    }
+    else {
+        Write-Host $response."Content"
+    }
 }
-# Write-Host $hostOutput
 
-Write-Output $response."Content" | ConvertFrom-Json | ConvertTo-Json -Depth 10 | Write-Output
+$response."Content" | ConvertFrom-Json | ConvertTo-Json -Depth 10 | Write-Output
