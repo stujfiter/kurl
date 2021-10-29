@@ -84,5 +84,5 @@ if ( -not $PSBoundParameters.ContainsKey('s') ) {
     }
 }
 else {
-    $response."Content" | ConvertFrom-Json | ConvertTo-Json -Depth 10 | Write-Output
+    $response."Content"
 }
