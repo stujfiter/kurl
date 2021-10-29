@@ -6,7 +6,7 @@ param (
     [Parameter(Mandatory = $false)][array]$v, # Define additional variables "KEY_1:value1,KEY2:value2"
     [Parameter(Mandatory = $false)][switch]$c, # Colorizes Output (Requires jq)
     [Parameter(Mandatory = $false)][string]$jwt, # Set a Bearer token to use for Auth
-    [Parameter(Mandatory = $false)][switch]$s    # Supress Terminal Output
+    [Parameter(Mandatory = $false)][switch]$s    # Supress Terminal Output and write the response body the pipeline
 )
 
 $ErrorActionPreference = "Stop"
@@ -83,5 +83,6 @@ if ( -not $PSBoundParameters.ContainsKey('s') ) {
         Write-Host $response."Content"
     }
 }
-
-$response."Content" | ConvertFrom-Json | ConvertTo-Json -Depth 10 | Write-Output
+else {
+    $response."Content" | ConvertFrom-Json | ConvertTo-Json -Depth 10 | Write-Output
+}
