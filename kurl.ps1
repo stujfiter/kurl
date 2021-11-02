@@ -2,9 +2,8 @@
 
 param (
     [Parameter(Mandatory = $true)][string]$f, # Request template file in json format
-    [Parameter(Mandatory = $false)][string]$e, # File of Environment Variables in json format
+    [Parameter(Mandatory = $false)][string]$e, # File of Environment Variables in json format (default ./env.json)
     [Parameter(Mandatory = $false)][array]$v, # Define additional variables "KEY_1:value1,KEY2:value2"
-    [Parameter(Mandatory = $false)][switch]$c, # Colorizes Output (Requires jq)
     [Parameter(Mandatory = $false)][string]$jwt, # Set a Bearer token to use for Auth
     [Parameter(Mandatory = $false)][switch]$s    # Supress Terminal Output and write the response body the pipeline
 )
@@ -23,6 +22,8 @@ $environment = @{}
 # Read the environment variables file into a Hash Table
 if ( $PSBoundParameters.ContainsKey('e') ) {
     $environment = Get-Content -Raw -Encoding UTF-8 $e | ConvertFrom-Json -AsHashTable
+} elseif (Test-Path -Path ./env.json -PathType Leaf) {
+    $environment = Get-Content -Raw -Encoding UTF-8 ./env.json | ConvertFrom-Json -AsHashTable
 }
 
 # Add any other environment variables specified with the -v switch
@@ -76,12 +77,7 @@ if ( -not $PSBoundParameters.ContainsKey('s') ) {
     Write-Host
     Write-Host StatusCode $response."StatusCode"
 
-    if ( $PSBoundParameters.ContainsKey('c') ) {
-        Write-Output $response."Content" | jq -C . | Write-Host
-    }
-    else {
-        Write-Host $response."Content"
-    }
+    Write-Output $response."Content" | jq -C . | Write-Host
 }
 else {
     $response."Content"

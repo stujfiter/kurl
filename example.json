@@ -1,5 +1,5 @@
 {
-    "url": "http://httpbin.org/anything",
+    "url": "${url}/anything",
     "method": "POST",
     "body": {
         "key": "value"

@@ -12,4 +12,25 @@ Httpie does not support the ingestion of a JSON based file to define the entire 
 
 # Features of Kurl
 - All calls are stored in JSON format
-- PowerShell and bash are both supported. 
+- Variables can be injected into the requests to allow environment switching
+- Silent Output can be piped as input to the next command (such as jq)
+- Includes support for Authorization Bearer Tokens
+
+# Installation
+## Windows (Requires PowerShell)
+1. Install jq via Chocolatey 
+    ```
+    choco install jq
+    ```
+1. Clone this repo to $HOME\bin 
+   ```
+   git clone https://github.com/stujfiter/kurl $HOME\bin\kurl
+   ```
+1. Setup an alias in Powershell 
+   ```
+   Add-Content -Path $profile -Value "`r`nSet-Alias -Name kurl -Value ""`$HOME\bin\kurl\kurl.ps1"""
+   ```
+1. Source the profile 
+   ```
+   . $profile
+   ```
