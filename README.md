@@ -34,3 +34,19 @@ Httpie does not support the ingestion of a JSON based file to define the entire 
    ```
    . $profile
    ```
+
+# Usage
+```
+kurl [-s] -f request_file.json `
+[-e environment_file.json] `
+[-v "KEY_1:value1","KEY_2:value2"] `
+[-jwt $token] `
+
+-f   Request template file in json format
+-e   File of Environment Variables in json format (default ./env.json)
+-v   Define additional variables "KEY_1:value1","KEY_2:value2"
+     A variable set with -v will override one with the same name in 
+     the environment variables file.
+-jwt Set a Bearer token to use for Auth
+-s   Supress Terminal Output and write the response body the pipeline
+```

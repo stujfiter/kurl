@@ -3,7 +3,7 @@
 param (
     [Parameter(Mandatory = $true)][string]$f, # Request template file in json format
     [Parameter(Mandatory = $false)][string]$e, # File of Environment Variables in json format (default ./env.json)
-    [Parameter(Mandatory = $false)][array]$v, # Define additional variables "KEY_1:value1,KEY2:value2"
+    [Parameter(Mandatory = $false)][array]$v, # Define additional variables "KEY_1:value1","KEY_2:value2"
     [Parameter(Mandatory = $false)][string]$jwt, # Set a Bearer token to use for Auth
     [Parameter(Mandatory = $false)][switch]$s    # Supress Terminal Output and write the response body the pipeline
 )
@@ -29,7 +29,7 @@ if ( $PSBoundParameters.ContainsKey('e') ) {
 # Add any other environment variables specified with the -v switch
 foreach ( $value in $v ) {
     $kv = $value.Split(":")
-    $environment += @{ $kv[0] = $kv[1] } 
+    $environment[$kv[0]] = $kv[1]
 }
 
 # Inject environment variables into the request
